@@ -9,9 +9,9 @@ graph TB
     CharactersPage["<b>Characters Page</b><br/>pages/Characters/index.tsx<br/>━━━━━━━━━━━━━━<br/>Main page component"]
 
     %% ========================================
-    %% CUSTOM HOOK
+    %% CUSTOM HOOK - CHARACTER PAGE
     %% ========================================
-    useCharacterSearch["<b>useCharacterSearch Hook</b><br/>pages/Characters/useCharacters.tsx<br/>━━━━━━━━━━━━━━<br/>- Manages search state<br/>- RxJS stream processing<br/>- API data fetching"]
+    useCharacterSearch["<b>🎯 useCharacterSearch Hook</b><br/>pages/Characters/useCharacters.tsx<br/>━━━━━━━━━━━━━━<br/><b>State Management:</b><br/>• pageState: PageState&lt;Character&gt;<br/>• pagination: &#123; current, total &#125;<br/>━━━━━━━━━━━━━━<br/><b>RxJS Streams:</b><br/>• inputChange$: BehaviorSubject&lt;string&gt;<br/>• page$: BehaviorSubject&lt;number&gt;<br/>• combineLatest([search$, page$])<br/>━━━━━━━━━━━━━━<br/><b>RxJS Operators:</b><br/>• debounceTime(500)<br/>• filter(term > 3)<br/>• distinctUntilChanged()<br/>• switchMap → getCharacters()<br/>• catchError → error handling<br/>• shareReplay(1)<br/>━━━━━━━━━━━━━━<br/><b>Exported Functions:</b><br/>• searchCharacters(e)<br/>• goToPage(page)<br/>• nextPage()<br/>• prevPage()<br/>━━━━━━━━━━━━━━<br/><b>Returns:</b><br/>&#123; data, error, isLoading,<br/>  currentPage, totalPages,<br/>  searchCharacters, goToPage,<br/>  nextPage, prevPage &#125;"]
 
     %% ========================================
     %% STATE MANAGEMENT
@@ -20,7 +20,11 @@ graph TB
 
     EmptyPageState["<b>EmptyPageState</b><br/>Initial state constant"]
 
-    inputChangeSubject["<b>inputChange$</b><br/>BehaviorSubject&lt;string&gt;<br/>━━━━━━━━━━━━━━<br/>Search input stream"]
+    inputChangeSubject["<b>inputChange$</b><br/>BehaviorSubject&lt;string&gt;<br/>━━━━━━━━━━━━━━<br/>Search input stream<br/>Initial: 'rick'"]
+
+    pageSubject["<b>page$</b><br/>BehaviorSubject&lt;number&gt;<br/>━━━━━━━━━━━━━━<br/>Current page stream<br/>Initial: 1"]
+
+    combinedStream["<b>combineLatest([search$, page$])</b><br/>Combined Observable<br/>━━━━━━━━━━━━━━<br/>Emits: [searchTerm, pageNumber]<br/>Triggers on either stream change"]
 
     %% ========================================
     %% DOMAIN ENTITIES & TYPES
@@ -38,9 +42,9 @@ graph TB
     Pagination["<b>Pagination&lt;T&gt;</b><br/>core/domain/common/pagination.ts<br/>━━━━━━━━━━━━━━<br/>info: &#123;<br/>  count: number<br/>  pages: number<br/>  next: string | null<br/>  prev: string | null<br/>&#125;<br/>results: T[]"]
 
     %% ========================================
-    %% SERVICE LAYER
+    %% SERVICE LAYER - RICK AND MORTY
     %% ========================================
-    RickMortyService["<b>getCharacters</b><br/>services/rick-and-morty.service.ts<br/>━━━━━━━━━━━━━━<br/>API service function<br/>Returns: CharacterPagination"]
+    RickMortyService["<b>🚀 Rick and Morty Service</b><br/>services/rick-and-morty.service.ts<br/>━━━━━━━━━━━━━━<br/>Function: getCharacters(name?: string)<br/>Returns: Promise&lt;CharacterPagination&gt;<br/>━━━━━━━━━━━━━━<br/>✓ Character search by name<br/>✓ Pagination support<br/>✓ Type-safe responses"]
 
     HttpClient["<b>clientHttp</b><br/>services/http-client.ts<br/>━━━━━━━━━━━━━━<br/>Axios wrapper<br/>- Request interceptor<br/>- Response interceptor<br/>- Error handling<br/>Methods: get, post, put, patch, delete"]
 
@@ -75,6 +79,8 @@ graph TB
     useCharacterSearch -->|"types data as"| Character
     useCharacterSearch -->|"calls"| RickMortyService
     useCharacterSearch -->|"creates & manages"| inputChangeSubject
+    useCharacterSearch -->|"creates & manages"| pageSubject
+    useCharacterSearch -->|"creates"| combinedStream
     useCharacterSearch -->|"processes with"| RxJS
 
     %% ========================================
@@ -115,7 +121,9 @@ graph TB
     %% ========================================
     %% RELATIONSHIPS - RxJS Stream
     %% ========================================
-    inputChangeSubject -->|"piped through"| RxJS
+    inputChangeSubject -->|"feeds into"| combinedStream
+    pageSubject -->|"feeds into"| combinedStream
+    combinedStream -->|"piped through"| RxJS
     RxJS -->|"triggers"| RickMortyService
 
     %% ========================================
@@ -135,6 +143,6 @@ graph TB
     class Character,Location,CharacterPagination,Pagination,PageState interfaceClass
     class CharacterStatus,CharacterGender typeClass
     class RickMortyService,HttpClient serviceClass
-    class RxJS,inputChangeSubject rxjsClass
+    class RxJS,inputChangeSubject,pageSubject,combinedStream rxjsClass
     class API apiClass
     class EmptyPageState stateClass
